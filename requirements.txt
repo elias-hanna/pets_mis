@@ -1,0 +1,5 @@
+dotmap==1.2.20
+future==0.16.0
+gpflow==1.1.0
+gym==0.9.4
+mujoco-py==0.5.7
