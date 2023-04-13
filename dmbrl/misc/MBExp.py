@@ -12,6 +12,7 @@ from dotmap import DotMap
 from dmbrl.misc.DotmapUtils import get_required_argument
 from dmbrl.misc.Agent import Agent
 
+import tqdm
 
 class MBExperiment:
     def __init__(self, params):
@@ -113,20 +114,17 @@ class MBExperiment:
                 traj_acs.append(samples[-1]["ac"])
                 traj_rews.append(samples[-1]["rewards"])
 
-        import pdb; pdb.set_trace()
         if self.ninit_rollouts > 0:
             self.policy.train(
                 [sample["obs"] for sample in samples],
                 [sample["ac"] for sample in samples],
                 [sample["rewards"] for sample in samples]
             )
-        import pdb; pdb.set_trace()
 
         # Training loop
         for i in range(self.ntrain_iters):
             print("####################################################################")
             print("Starting training iteration %d." % (i + 1))
-
             iter_dir = os.path.join(self.logdir, "train_iter%d" % (i + 1))
             os.makedirs(iter_dir, exist_ok=True)
 
@@ -138,10 +136,13 @@ class MBExperiment:
                         os.path.join(iter_dir, "rollout%d.mp4" % j)
                     )
                 )
+
             if self.nrecord > 0:
                 for item in filter(lambda f: f.endswith(".json"), os.listdir(iter_dir)):
                     os.remove(os.path.join(iter_dir, item))
-            for j in range(max(self.neval, self.nrollouts_per_iter) - self.nrecord):
+            # for j in range(max(self.neval, self.nrollouts_per_iter) - self.nrecord):
+            for j in tqdm.tqdm(range(max(self.neval, self.nrollouts_per_iter) - self.nrecord),
+                               total=max(self.neval, self.nrollouts_per_iter) - self.nrecord):
                 samples.append(
                     self.agent.sample(
                         self.task_hor, self.policy
