@@ -14,6 +14,17 @@ from dmbrl.config import create_config
 
 
 def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
+    import tensorflow as tf
+    ## 1.9
+    with tf.Session() as sess:
+        devices = sess.list_devices()
+    ## 2.1
+    # devices = tf.config.list_physical_devices('GPU')
+
+    print()
+    print("LIST OF DEVICES: ", devices)
+    print()
+
     ctrl_args = DotMap(**{key: val for (key, val) in ctrl_args})
     cfg = create_config(env, ctrl_type, ctrl_args, overrides, logdir)
     cfg.pprint()
