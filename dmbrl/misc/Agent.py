@@ -8,6 +8,7 @@ from dotmap import DotMap
 
 import time
 
+import tqdm
 
 class Agent:
     """An general class for RL agents.
@@ -53,19 +54,22 @@ class Agent:
         O, A, reward_sum, done = [self.env.reset()], [], 0, False
 
         policy.reset()
-        for t in range(horizon):
+        # for t in range(horizon):
+        for t in tqdm.tqdm(range(horizon), total=horizon):
+            t0 = time.time()
             if video_record:
                 recorder.capture_frame()
+            t1 = time.time()
             start = time.time()
             A.append(policy.act(O[t], t))
             times.append(time.time() - start)
-
             if self.noise_stddev is None:
                 obs, reward, done, info = self.env.step(A[t])
             else:
                 action = A[t] + np.random.normal(loc=0, scale=self.noise_stddev, size=[self.dU])
                 action = np.minimum(np.maximum(action, self.env.action_space.low), self.env.action_space.high)
                 obs, reward, done, info = self.env.step(action)
+            t2 = time.time()
             O.append(obs)
             reward_sum += reward
             rewards.append(reward)
