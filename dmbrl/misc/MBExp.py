@@ -113,14 +113,12 @@ class MBExperiment:
                 traj_acs.append(samples[-1]["ac"])
                 traj_rews.append(samples[-1]["rewards"])
 
-        import pdb; pdb.set_trace()
         if self.ninit_rollouts > 0:
             self.policy.train(
                 [sample["obs"] for sample in samples],
                 [sample["ac"] for sample in samples],
                 [sample["rewards"] for sample in samples]
             )
-        import pdb; pdb.set_trace()
 
         # Training loop
         for i in range(self.ntrain_iters):
