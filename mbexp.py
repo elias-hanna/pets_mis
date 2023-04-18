@@ -18,8 +18,12 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
     ## 1.9
     with tf.Session() as sess:
         devices = sess.list_devices()
+
     ## 2.1
     # devices = tf.config.list_physical_devices('GPU')
+    # physical_devices = tf.config.list_physical_devices('GPU') 
+    # for device in physical_devices:
+    #     tf.config.experimental.set_memory_growth(device, True)
 
     print()
     print("LIST OF DEVICES: ", devices)
@@ -110,13 +114,19 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
         
     if ctrl_type == "MPC":
         cfg.exp_cfg.exp_cfg.policy = MPC(cfg.ctrl_cfg)
+    
     exp = MBExperiment(cfg.exp_cfg)
 
+    
     os.makedirs(exp.logdir)
     with open(os.path.join(exp.logdir, "config.txt"), "w") as f:
         f.write(pprint.pformat(cfg.toDict()))
 
-    exp.run_experiment(**kwargs)
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    # session = tf.Session(config=config, ...)
+    with tf.Session(config=config) as sess:
+        exp.run_experiment(**kwargs)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

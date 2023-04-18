@@ -79,6 +79,9 @@ class MBExperiment:
         traj_obs, traj_acs, traj_rets, traj_rews = [], [], [], []
 
         # Perform initial rollouts
+        print()
+        print("#### 0 ####")
+        print()
 
         samples = []
         ## This is where I add model init study layer, with sampling methods on self.env
@@ -114,6 +117,10 @@ class MBExperiment:
                 traj_acs.append(samples[-1]["ac"])
                 traj_rews.append(samples[-1]["rewards"])
 
+        print()
+        print("#### 1 ####")
+        print()
+
         if self.ninit_rollouts > 0:
             self.policy.train(
                 [sample["obs"] for sample in samples],
@@ -121,6 +128,10 @@ class MBExperiment:
                 [sample["rewards"] for sample in samples]
             )
 
+        print()
+        print("#### 2 ####")
+        print()
+        
         # Training loop
         for i in range(self.ntrain_iters):
             print("####################################################################")
