@@ -79,10 +79,6 @@ class MBExperiment:
         traj_obs, traj_acs, traj_rets, traj_rews = [], [], [], []
 
         # Perform initial rollouts
-        print()
-        print("#### 0 ####")
-        print()
-
         samples = []
         ## This is where I add model init study layer, with sampling methods on self.env
         if initializer is not None:
@@ -117,10 +113,6 @@ class MBExperiment:
                 traj_acs.append(samples[-1]["ac"])
                 traj_rews.append(samples[-1]["rewards"])
 
-        print()
-        print("#### 1 ####")
-        print()
-
         if self.ninit_rollouts > 0:
             self.policy.train(
                 [sample["obs"] for sample in samples],
@@ -128,10 +120,23 @@ class MBExperiment:
                 [sample["rewards"] for sample in samples]
             )
 
-        print()
-        print("#### 2 ####")
-        print()
-        
+        iter_dir = os.path.join(self.logdir, "init_iter")
+        os.makedirs(iter_dir, exist_ok=True)
+
+        self.policy.dump_logs(self.logdir, iter_dir)
+        savemat(
+            os.path.join(self.logdir, "logs.mat"),
+            {
+                "observations": traj_obs,
+                "actions": traj_acs,
+#                "returns": traj_rets,
+                "rewards": traj_rews
+            }
+        )
+        # Delete iteration directory if not used
+        if len(os.listdir(iter_dir)) == 0:
+            os.rmdir(iter_dir)
+
         # Training loop
         for i in range(self.ntrain_iters):
             print("####################################################################")

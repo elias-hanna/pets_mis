@@ -21,10 +21,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
 
     ## 2.1
     # devices = tf.config.list_physical_devices('GPU')
-    # physical_devices = tf.config.list_physical_devices('GPU') 
-    # for device in physical_devices:
-    #     tf.config.experimental.set_memory_growth(device, True)
-
+    
     print()
     print("LIST OF DEVICES: ", devices)
     print()
@@ -67,7 +64,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
             Initializer = ColoredNoiseMotion
             noise_beta = 2
         else:
-            raise Exception(f"Warning {args.init_method} isn't a valid initializer")
+            raise Exception("Warning ",args.init_method, "isn't a valid initializer")
 
         obs_dim = cfg.ctrl_cfg.env.obs_dim
         act_dim = cfg.ctrl_cfg.env.action_space.shape[0]
@@ -117,16 +114,11 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
     
     exp = MBExperiment(cfg.exp_cfg)
 
-    
     os.makedirs(exp.logdir)
     with open(os.path.join(exp.logdir, "config.txt"), "w") as f:
         f.write(pprint.pformat(cfg.toDict()))
 
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-    # session = tf.Session(config=config, ...)
-    with tf.Session(config=config) as sess:
-        exp.run_experiment(**kwargs)
+    exp.run_experiment(**kwargs)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

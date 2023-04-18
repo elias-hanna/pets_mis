@@ -25,6 +25,8 @@ class CartpoleConfigModule:
         self.ENV = gym.make(self.ENV_NAME)
         cfg = tf.ConfigProto()
         cfg.gpu_options.allow_growth = True
+        cfg.gpu_options.per_process_gpu_memory_fraction = 0.1
+        cfg.log_device_placement = True
         self.SESS = tf.Session(config=cfg)
         self.NN_TRAIN_CFG = {"epochs": 5}
         self.OPT_CFG = {

@@ -115,6 +115,7 @@ class MPC(Controller):
         if self.prop_mode == "E" and self.npart != 1:
             raise ValueError("Deterministic propagation methods only need one particle.")
 
+        import pdb; pdb.set_trace()
         # Create action sequence optimizer
         opt_cfg = params.opt_cfg.get("cfg", {})
         self.optimizer = MPC.optimizers[params.opt_cfg.mode](
