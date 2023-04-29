@@ -40,7 +40,10 @@ def main(args):
         rep_dirs = [os.path.join(method_wd, rep_dir)
                     for rep_dir in rep_dirs]
 
-        returns = []
+        # returns = []
+        returns = np.empty((n_reps, min_num_trials))
+        returns[:] = np.nan
+        rep_cpt = 0
         for rep_dir in rep_dirs:
             # get time dirs (from rep_dir pov)
             try:
@@ -55,12 +58,14 @@ def main(args):
             time_dir = time_dirs[0]
             data = loadmat(os.path.join(time_dir, "logs.mat"))
             if data["returns"].shape[1] >= min_num_trials:
-                returns.append(data["returns"][0][:min_num_trials])
+                # returns.append(data["returns"][0][:min_num_trials])
+                returns[rep_cpt] = data["returns"][0][:min_num_trials]
 
+            rep_cpt += 1
+            
         returns = np.array(returns)
         returns = np.maximum.accumulate(returns, axis=-1)
         im_returns[im_cpt,:,:] = returns
-
 
     fig, ax = plt.subplots()
 

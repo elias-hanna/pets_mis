@@ -15,11 +15,11 @@ from dmbrl.config import create_config
 
 def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
     import tensorflow as tf
-    ## 1.9
+    ## 1.x
     with tf.Session() as sess:
         devices = sess.list_devices()
 
-    ## 2.1
+    ## 2.x
     # devices = tf.config.list_physical_devices('GPU')
     
     print()

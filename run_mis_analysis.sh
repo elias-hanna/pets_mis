@@ -11,7 +11,8 @@ reps=10
 ## Environments
 environments=(pusher reacher cartpole halfcheetah)
 environments=(pusher reacher)
-
+environments=(cartpole)
+ 
 ## considered policy search methods
 ims=(random-actions brownian-motion colored-noise-beta-0 colored-noise-beta-1 colored-noise-beta-2 random-policies)
 ims=(random-actions brownian-motion colored-noise-beta-0 colored-noise-beta-1 colored-noise-beta-2)
