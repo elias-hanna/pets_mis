@@ -207,6 +207,12 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
             self.ens_size = self.policy.model.num_nets
 
         def forward_multiple(A, S, mean=True, disagr=True):
+            pass
+
+        def forward(self, a, s, mean=True, disagr=True, multiple=False):
+            pass
+            
+        def forward_multiple(A, S, mean=True, disagr=True):
             ## Takes a list of actions A and a list of states S we want to query the model from
             ## Returns a list of the return of a forward call for each couple (action, state)
             assert len(A) == len(S)
