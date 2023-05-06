@@ -328,7 +328,7 @@ class BNN:
                 feed_dict={self.sy_pred_in3d: inputs}
             )
 
-    def create_prediction_tensors(self, inputs, factored=False, *args, **kwargs):
+    def create_prediction_tensors(self, inputs, factored=False, return_numpy=False, *args, **kwargs):
         """See predict() above for documentation.
         """
         factored_mean, factored_variance = self._compile_outputs(inputs)
@@ -336,7 +336,11 @@ class BNN:
             mean = tf.reduce_mean(factored_mean, axis=0)
             variance = tf.reduce_mean(tf.square(factored_mean - mean), axis=0) + \
                        tf.reduce_mean(factored_variance, axis=0)
+            if return_numpy:
+                return mean.eval(session=self.sess), variance.eval(session=self.sess)
             return mean, variance
+        if return_numpy:
+            return factored_mean.eval(session=self.sess), factored_variance.eval(session=self.sess)
         return factored_mean, factored_variance
 
     def save(self, savedir=None):
