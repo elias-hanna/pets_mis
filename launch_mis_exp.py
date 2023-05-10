@@ -42,6 +42,8 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
         ## Visualizing method
         from model_init_study.visualization.n_step_error_visualization \
         import NStepErrorVisualization
+        from model_init_study.visualization.n_step_error_visualization \
+        import DynamicsVisualization
 
         ## Instantiate Initializer with params
         from model_init_study.initializers.random_policy_initializer \
@@ -113,6 +115,11 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
 
             'env': cfg.ctrl_cfg.env,
             'env_max_h': cfg.exp_cfg.sim_cfg.task_hor,
+
+            ## Dynamics visualizer specific params
+            'sample_hor': 1,
+            'sample_budget': 100,
+            'num_cores': 10,
         }
 
         ## Instanciate the initializer
@@ -276,6 +283,9 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
     n_step_visualizer = NStepErrorVisualization(params)
     n_step_visualizer.set_test_trajectories(pets_final_trajectories)
 
+    dynamics_visualizer = DynamicsVisualizer(params)
+    import pdb; pdb.set_trace()
+    dynamics_visualizer.dump_plots(0)
     ## FROM EXAMPLE TRAJECTORIES (end trajs that solve the task)
     ## Visualize n step error and disagreement ###
 
