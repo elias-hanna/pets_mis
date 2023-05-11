@@ -2,7 +2,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-
 ## NEED TO WRAP policy around a dynamics model obj
 class WrappedPETSDynamicsModel():
     def __init__(self, policy):
@@ -359,6 +358,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
     n_step_visualizer.set_test_trajectories(ret_trajs)
     n_step_visualizer.set_controller(None, actions_lists=ret_acs,
                                      ctrl_type='actions_list', ctrl_input='time')
+
     dynamics_visualizer = DynamicsVisualizer(params)
     import pdb; pdb.set_trace()
     dynamics_visualizer.dump_plots(0)
