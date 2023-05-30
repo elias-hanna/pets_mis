@@ -147,7 +147,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
         ## Visualizing method
         from model_init_study.visualization.n_step_error_visualization \
         import NStepErrorVisualization
-        from model_init_study.visualization.n_step_error_visualization \
+        from model_init_study.visualization.dynamics_visualization \
         import DynamicsVisualization
 
         ## Instantiate Initializer with params
@@ -322,8 +322,12 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
 
     ## We get them from random actions folder results on each env:
     home_path = os.path.expanduser('~')
-    path_to_results = os.path.join(home_path, '/src/pets/data/mis_results/')
-    path_to_test_trajectories = '{}_pets_results/{}_random-actions_pets_results'.format(env, env)
+    path_to_results = ''
+    if args.pets_results_path is not None:
+        path_to_results = os.path.join(home_path, args.pets_results_path)
+    else:
+        path_to_results = os.path.join(home_path, 'mis_results/')
+        path_to_test_trajectories = '{}_pets_results/{}_random-actions_pets_results'.format(env, env)
 
     abs_path_to_trajs = os.path.join(path_to_results, path_to_test_trajectories)
 
@@ -359,8 +363,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
     n_step_visualizer.set_controller(None, actions_lists=ret_acs,
                                      ctrl_type='actions_list', ctrl_input='time')
 
-    dynamics_visualizer = DynamicsVisualizer(params)
-    import pdb; pdb.set_trace()
+    dynamics_visualizer = DynamicsVisualization(params)
     dynamics_visualizer.dump_plots(0)
     ## FROM EXAMPLE TRAJECTORIES (end trajs that solve the task)
     ## Visualize n step error and disagreement ###
@@ -435,7 +438,9 @@ if __name__ == "__main__":
                         help='which initial data gathering method to use')
     parser.add_argument('--init-episode', type=int, default=10,
                         help='Budget for initial data gathering method')
-
+    parser.add_argument('--pets-results-path', type=str, default=None,
+                        help='Path of previous PETS results for running the MIS')
+    
     args = parser.parse_args()
 
     main(args.env, "MPC", args.ctrl_arg, args.override, args.logdir, args.init_method, args.init_episode)
