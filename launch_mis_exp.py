@@ -333,10 +333,18 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
 
     abs_path_to_trajs = os.path.join(path_to_results, path_to_test_trajectories)
 
-    ## Will have to do it with os.walk for other envs
-    traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-23--15:12:46/logs.mat'))
-    traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-23--15:12:46/logs.mat'))
+    if env == 'cartpole': 
+        ## Will have to do it with os.walk for other envs
+        traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-23--15:12:46/logs.mat'))
+        traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-23--15:12:46/logs.mat'))
+    elif env == 'pusher':
+        traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-22--08:37:34/logs.mat'))
+        traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-22--08:37:34/logs.mat'))
+    elif env == 'reacher':
+        traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-20--15:30:24/logs.mat'))
+        traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-20--15:30:25/logs.mat'))
 
+        
     def get_test_data(*args):
         ret_acs = []
         ret_trajs = []

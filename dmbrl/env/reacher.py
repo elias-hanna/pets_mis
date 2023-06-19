@@ -45,6 +45,40 @@ class Reacher3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             self.model.data.qvel.flat[:-3],
         ])
 
+    def sample_q_vectors(self):
+        import pdb; pdb.set_trace()
+        qpos_min = np.array([-np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
+                             -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
+                             -np.pi/2])
+        qpos_max = np.array([np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
+                             np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
+                             np.pi/2])
+        qvel_min = np.array([-0.1, -0.1, -0.1, -0.1, -0.1,
+                             -0.1, -0.1, -0.1, -0.1, -0.1,
+                             -0.1])
+        qvel_max = np.array([0.1, 0.1, 0.1, 0.1, 0.1,
+                             0.1, 0.1, 0.1, 0.1, 0.1,
+                             0.1])
+        qpos_min = np.array([-np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
+                             -np.pi/2, -np.pi/2, 0, 0, 0, 0])
+        qpos_max = np.array([np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
+                             np.pi/2, np.pi/2, 0, 0, 0, 0])
+        qvel_min = np.array([-0.1, -0.1, -0.1, -0.1, -0.1,
+                             -0.1, -0.1, 0, 0, 0, 0])
+        qvel_max = np.array([0.1, 0.1, 0.1, 0.1, 0.1,
+                             0.1, 0.1, 0, 0, 0, 0])
+        
+        qpos = np.zeros(11)
+        qvel = np.zeros(11)
+        ## Sample qpos and qvel
+        qpos = np.random.uniform(low=qpos_min, high=qpos_max, size=(11,))
+        qvel = np.random.uniform(low=qvel_min, high=qvel_max, size=(11,))
+        ## Reconstruct state from qpos and qvel
+        self.set_state(qpos, qvel)
+        sample_state = self._get_obs()
+        ## Return qpos, qvel and corresponding state
+        return qpos, qvel, sample_state
+
     def get_EE_pos(self, states):
         theta1, theta2, theta3, theta4, theta5, theta6, theta7 = \
             states[:, :1], states[:, 1:2], states[:, 2:3], states[:, 3:4], states[:, 4:5], states[:, 5:6], states[:, 6:]

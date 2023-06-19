@@ -60,15 +60,34 @@ class PusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         ])
 
     def sample_q_vectors(self):
-        ## qpos: [cart x_pos, pole angle, cart x_vel, pole angular vel]
-        state_min = np.array([-2.5, -np.pi, -1, -1])
-        state_max = np.array([2.5, np.pi, 1, 1])
-
-        qpos = np.zeros(2)
-        qvel = np.zeros(2)
+        qpos_min = np.array([-np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
+                             -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
+                             -np.pi/2])
+        qpos_max = np.array([np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
+                             np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
+                             np.pi/2])
+        qvel_min = np.array([-0.1, -0.1, -0.1, -0.1, -0.1,
+                             -0.1, -0.1, -0.1, -0.1, -0.1,
+                             -0.1])
+        qvel_max = np.array([0.1, 0.1, 0.1, 0.1, 0.1,
+                             0.1, 0.1, 0.1, 0.1, 0.1,
+                             0.1])
+        qpos_min = np.array([-np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
+                             -np.pi/2, -np.pi/2, 0, 0, 0, 0])
+        qpos_max = np.array([np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
+                             np.pi/2, np.pi/2, 0, 0, 0, 0])
+        qvel_min = np.array([-0.1, -0.1, -0.1, -0.1, -0.1,
+                             -0.1, -0.1, 0, 0, 0, 0])
+        qvel_max = np.array([0.1, 0.1, 0.1, 0.1, 0.1,
+                             0.1, 0.1, 0, 0, 0, 0])
+        
+        qpos = np.zeros(11)
+        qvel = np.zeros(11)
         ## Sample qpos and qvel
-        sample_state = np.random.uniform(low=state_min, high=state_max, size=(4,))
-        qpos = sample_state[:2]; qvel = sample_state[2:]
-
+        qpos = np.random.uniform(low=qpos_min, high=qpos_max, size=(11,))
+        qvel = np.random.uniform(low=qvel_min, high=qvel_max, size=(11,))
+        ## Reconstruct state from qpos and qvel
+        self.set_state(qpos, qvel)
+        sample_state = self._get_obs()
         ## Return qpos, qvel and corresponding state
         return qpos, qvel, sample_state
