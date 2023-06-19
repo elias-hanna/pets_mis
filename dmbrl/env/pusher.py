@@ -60,18 +60,7 @@ class PusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         ])
 
     def sample_q_vectors(self):
-        qpos_min = np.array([-np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
-                             -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
-                             -np.pi/2])
-        qpos_max = np.array([np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
-                             np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
-                             np.pi/2])
-        qvel_min = np.array([-0.1, -0.1, -0.1, -0.1, -0.1,
-                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                             -0.1])
-        qvel_max = np.array([0.1, 0.1, 0.1, 0.1, 0.1,
-                             0.1, 0.1, 0.1, 0.1, 0.1,
-                             0.1])
+        ## Need to double check the 5 last qs (and all others once again) 
         qpos_min = np.array([-np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
                              -np.pi/2, -np.pi/2, 0, 0, 0, 0])
         qpos_max = np.array([np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
