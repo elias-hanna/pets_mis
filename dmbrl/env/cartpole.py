@@ -16,7 +16,7 @@ class CartpoleEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
         dir_path = os.path.dirname(os.path.realpath(__file__))
         mujoco_env.MujocoEnv.__init__(self, '%s/assets/cartpole.xml' % dir_path, 2)
-
+        
     def _step(self, a):
         self.do_simulation(a, self.frame_skip)
         ob = self._get_obs()
@@ -38,6 +38,22 @@ class CartpoleEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def _get_obs(self):
         return np.concatenate([self.model.data.qpos, self.model.data.qvel]).ravel()
+
+    def sample_q_vectors(self):
+        ## qpos: [cart x_pos, pole angle, cart x_vel, pole angular vel]
+        # state_min = np.array([-2.5, -np.pi, -1, -1])
+        # state_max = np.array([2.5, np.pi, 1, 1])
+        state_min = np.array([-2.5, -np.pi, -0.1, -0.1])
+        state_max = np.array([2.5, np.pi, 0.1, 0.1])
+
+        qpos = np.zeros(2)
+        qvel = np.zeros(2)
+        ## Sample qpos and qvel
+        sample_state = np.random.uniform(low=state_min, high=state_max, size=(4,))
+        qpos = sample_state[:2]; qvel = sample_state[2:]
+
+        ## Return qpos, qvel and corresponding state
+        return qpos, qvel, sample_state
 
     @staticmethod
     def _get_ee_pos(x):

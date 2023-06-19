@@ -225,11 +225,13 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
             'policy_param_init_max': 5,
 
             'env': cfg.ctrl_cfg.env,
+            'env_name': env,
             'env_max_h': cfg.exp_cfg.sim_cfg.task_hor,
 
             ## Dynamics visualizer specific params
             'sample_hor': 1,
-            'sample_budget': 100,
+            'action_sample_budget': 100,
+            'state_sample_budget': 1000,
             'num_cores': 10,
         }
 

@@ -58,3 +58,17 @@ class PusherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             self.get_body_com("tips_arm"),
             self.get_body_com("object"),
         ])
+
+    def sample_q_vectors(self):
+        ## qpos: [cart x_pos, pole angle, cart x_vel, pole angular vel]
+        state_min = np.array([-2.5, -np.pi, -1, -1])
+        state_max = np.array([2.5, np.pi, 1, 1])
+
+        qpos = np.zeros(2)
+        qvel = np.zeros(2)
+        ## Sample qpos and qvel
+        sample_state = np.random.uniform(low=state_min, high=state_max, size=(4,))
+        qpos = sample_state[:2]; qvel = sample_state[2:]
+
+        ## Return qpos, qvel and corresponding state
+        return qpos, qvel, sample_state
