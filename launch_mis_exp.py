@@ -145,6 +145,8 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
     kwargs = {}
     if init_method is not None:
         ## Visualizing method
+        from model_init_study.visualization.test_trajectories_visualization \
+        import TestTrajectoriesVisualization
         from model_init_study.visualization.n_step_error_visualization \
         import NStepErrorVisualization
         from model_init_study.visualization.dynamics_visualization \
@@ -233,6 +235,9 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
             'action_sample_budget': 100,
             'state_sample_budget': 1000,
             'num_cores': 10,
+
+            ## dump
+            'dump_path': logdir,
         }
 
         ## Instanciate the initializer
@@ -368,6 +373,13 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
         
     ## Execute each visualize routines
     params['model'] = dynamics_model # to pass down to the visualizer routines
+
+    test_traj_visualizer = TestTrajectoriesVisualization(params)
+    test_traj_visualizer.set_test_trajectories(ret_trajs)
+    test_traj_visualizer.set_controller(None, actions_lists=ret_acs,
+                                     ctrl_type='actions_list', ctrl_input='time')
+
+
     n_step_visualizer = NStepErrorVisualization(params)
     n_step_visualizer.set_test_trajectories(ret_trajs)
     n_step_visualizer.set_controller(None, actions_lists=ret_acs,
@@ -394,20 +406,37 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
         init_episode,
         'examples', dump_separate=True, no_sep=True)
 
+    ### Full recursive prediction visualizations ###
+    examples_pred_trajs, examples_disagrs, examples_pred_errors = test_traj_visualizer.dump_plots(
+        env,
+        args.init_method,
+        args.init_episode,
+        'examples', dump_separate=True, no_sep=True)
 
+    ### Full recursive prediction visualizations ###
+    test_traj_visualizer.set_test_trajectories(test_trajectories)
+    test_pred_trajs, test_disagrs, test_pred_errors = test_traj_visualizer.dump_plots(
+        env,
+        args.init_method,
+        args.init_episode,
+        'test', dump_separate=True, no_sep=True)
+
+    data_path = os.path.join(
+        logdir,
+        '{}_{}_{}_data.npz'.format(env, init_method, init_episode))
     np.savez(data_path,
-             test_pred_trajs=test_pred_trajs,
-             test_disagrs=test_disagrs,
-             test_pred_errors=test_pred_errors,
+             # test_pred_trajs=test_pred_trajs,
+             # test_disagrs=test_disagrs,
+             # test_pred_errors=test_pred_errors,
              examples_pred_trajs=examples_pred_trajs,
              examples_disagrs=examples_disagrs,
              examples_pred_errors=examples_pred_errors,
              examples_1_step_trajs=examples_1_step_trajs,
              examples_1_step_disagrs=examples_1_step_disagrs,
              examples_1_step_pred_errors=examples_1_step_pred_errors,
-             examples_plan_h_step_trajs=examples_plan_h_step_trajs,
-             examples_plan_h_step_disagrs=examples_plan_h_step_disagrs,
-             examples_plan_h_step_pred_errors=examples_plan_h_step_pred_errors,
+             # examples_plan_h_step_trajs=examples_plan_h_step_trajs,
+             # examples_plan_h_step_disagrs=examples_plan_h_step_disagrs,
+             # examples_plan_h_step_pred_errors=examples_plan_h_step_pred_errors,
              train_trajs=train_trajectories,
              train_actions=train_actions,
              test_trajs=test_trajectories,
