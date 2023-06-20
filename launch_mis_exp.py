@@ -137,7 +137,8 @@ def transitions_to_samples(trajs, samples):
 ################################################################################
 #################################### Main ######################################
 ################################################################################
-def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode):
+def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
+         init_episode, num_cores, action_sample_budget, state_sample_budget):
     ctrl_args = DotMap(**{key: val for (key, val) in ctrl_args})
     cfg = create_config(env, ctrl_type, ctrl_args, overrides, logdir)
     cfg.pprint()
@@ -232,9 +233,9 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
 
             ## Dynamics visualizer specific params
             'sample_hor': 1,
-            'action_sample_budget': 100,
-            'state_sample_budget': 1000,
-            'num_cores': 10,
+            'action_sample_budget': action_sample_budget,
+            'state_sample_budget': state_sample_budget,
+            'num_cores': num_cores,
 
             ## dump
             'dump_path': logdir,
@@ -331,10 +332,11 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
     home_path = os.path.expanduser('~')
     path_to_results = ''
     if args.pets_results_path is not None:
-        path_to_results = os.path.join(home_path, args.pets_results_path)
+        path_to_results = args.pets_results_path
     else:
         path_to_results = os.path.join(home_path, 'mis_results/')
-        path_to_test_trajectories = '{}_pets_results/{}_random-actions_pets_results'.format(env, env)
+
+    path_to_test_trajectories = '{}_pets_results/{}_random-actions_pets_results'.format(env, env)
 
     abs_path_to_trajs = os.path.join(path_to_results, path_to_test_trajectories)
 
@@ -424,24 +426,30 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method, init_episode
     data_path = os.path.join(
         logdir,
         '{}_{}_{}_data.npz'.format(env, init_method, init_episode))
+
+    
     np.savez(data_path,
-             # test_pred_trajs=test_pred_trajs,
-             # test_disagrs=test_disagrs,
-             # test_pred_errors=test_pred_errors,
+             test_pred_trajs=test_pred_trajs,
+             test_disagrs=test_disagrs,
+             test_pred_errors=test_pred_errors,
              examples_pred_trajs=examples_pred_trajs,
              examples_disagrs=examples_disagrs,
              examples_pred_errors=examples_pred_errors,
              examples_1_step_trajs=examples_1_step_trajs,
              examples_1_step_disagrs=examples_1_step_disagrs,
              examples_1_step_pred_errors=examples_1_step_pred_errors,
-             # examples_plan_h_step_trajs=examples_plan_h_step_trajs,
-             # examples_plan_h_step_disagrs=examples_plan_h_step_disagrs,
-             # examples_plan_h_step_pred_errors=examples_plan_h_step_pred_errors,
+             examples_plan_h_step_trajs=examples_plan_h_step_trajs,
+             examples_plan_h_step_disagrs=examples_plan_h_step_disagrs,
+             examples_plan_h_step_pred_errors=examples_plan_h_step_pred_errors,
              train_trajs=train_trajectories,
              train_actions=train_actions,
              test_trajs=test_trajectories,
              test_actions=test_actions,)
 
+    print('Finished cleanly for {} environment with {} init method and {} episodes budget'.format(env, args.init_method, args.init_episode))
+    print('\n###############################################################################\n')
+    exit(0)
+    
 if __name__ == "__main__":
     import logging
     import os
@@ -479,7 +487,13 @@ if __name__ == "__main__":
                         help='Budget for initial data gathering method')
     parser.add_argument('--pets-results-path', type=str, default=None,
                         help='Path of previous PETS results for running the MIS')
+    parser.add_argument('--num-cores', type=int, default=10,
+                        help='number of cores to use for parallel computation')
+    parser.add_argument('--action-sample-budget', type=int, default=1000,
+                        help='Number of different action to sample')
+    parser.add_argument('--state-sample-budget', type=int, default=1000,
+                        help='Number of states to sample per action')
     
     args = parser.parse_args()
 
-    main(args.env, "MPC", args.ctrl_arg, args.override, args.logdir, args.init_method, args.init_episode)
+    main(args.env, "MPC", args.ctrl_arg, args.override, args.logdir, args.init_method, args.init_episode, args.num_cores, args.action_sample_budget, args.state_sample_budget)
