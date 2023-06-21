@@ -371,6 +371,12 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     ret_acs = ret_acs[:,:-1]; ret_trajs = ret_trajs[:,:-1];
     ret_returns = ret_returns[:,:-1]; ret_rewards[:,:-1];
     
+    dynamics_visualizer = DynamicsVisualization(params)
+    dynamics_visualizer.dump_plots(0)
+
+    if args.dynamics_only:
+        exit(0)
+
     dynamics_model = WrappedPETSDynamicsModel(policy)
         
     ## Execute each visualize routines
@@ -387,8 +393,6 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     n_step_visualizer.set_controller(None, actions_lists=ret_acs,
                                      ctrl_type='actions_list', ctrl_input='time')
 
-    dynamics_visualizer = DynamicsVisualization(params)
-    dynamics_visualizer.dump_plots(0)
     ## FROM EXAMPLE TRAJECTORIES (end trajs that solve the task)
     ## Visualize n step error and disagreement ###
 
@@ -400,13 +404,13 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
         init_episode,
         'examples', dump_separate=True, no_sep=True)
 
-    n_step_visualizer.set_n(plan_h)
+    # n_step_visualizer.set_n(plan_h)
     
-    examples_plan_h_step_trajs, examples_plan_h_step_disagrs, examples_plan_h_step_pred_errors = n_step_visualizer.dump_plots(
-        env,
-        args.init_method,
-        init_episode,
-        'examples', dump_separate=True, no_sep=True)
+    # examples_plan_h_step_trajs, examples_plan_h_step_disagrs, examples_plan_h_step_pred_errors = n_step_visualizer.dump_plots(
+    #     env,
+    #     args.init_method,
+    #     init_episode,
+    #     'examples', dump_separate=True, no_sep=True)
 
     ### Full recursive prediction visualizations ###
     examples_pred_trajs, examples_disagrs, examples_pred_errors = test_traj_visualizer.dump_plots(
@@ -438,9 +442,9 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
              examples_1_step_trajs=examples_1_step_trajs,
              examples_1_step_disagrs=examples_1_step_disagrs,
              examples_1_step_pred_errors=examples_1_step_pred_errors,
-             examples_plan_h_step_trajs=examples_plan_h_step_trajs,
-             examples_plan_h_step_disagrs=examples_plan_h_step_disagrs,
-             examples_plan_h_step_pred_errors=examples_plan_h_step_pred_errors,
+             # examples_plan_h_step_trajs=examples_plan_h_step_trajs,
+             # examples_plan_h_step_disagrs=examples_plan_h_step_disagrs,
+             # examples_plan_h_step_pred_errors=examples_plan_h_step_pred_errors,
              train_trajs=train_trajectories,
              train_actions=train_actions,
              test_trajs=test_trajectories,
@@ -493,7 +497,9 @@ if __name__ == "__main__":
                         help='Number of different action to sample')
     parser.add_argument('--state-sample-budget', type=int, default=1000,
                         help='Number of states to sample per action')
-    
+    parser.add_argument('--dynamics-only', action="store_true",
+                        help='If on, will only compute dynamics uniformity')
+
     args = parser.parse_args()
 
     main(args.env, "MPC", args.ctrl_arg, args.override, args.logdir, args.init_method, args.init_episode, args.num_cores, args.action_sample_budget, args.state_sample_budget)
