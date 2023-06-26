@@ -59,6 +59,7 @@ class HalfCheetahConfigModule:
 
     @staticmethod
     def obs_cost_fn(obs):
+        import pdb; pdb.set_trace()
         return -obs[:, 0]
 
     @staticmethod

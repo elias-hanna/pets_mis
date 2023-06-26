@@ -24,17 +24,19 @@ class BallInCup3dConfigModule:
         self.ENV = gym.make(self.ENV_NAME)
         cfg = tf.ConfigProto()
         cfg.gpu_options.allow_growth = True
+        cfg.gpu_options.per_process_gpu_memory_fraction = 0.1
+        cfg.log_device_placement = True
         self.SESS = tf.Session(config=cfg)
         self.NN_TRAIN_CFG = {"epochs": None}
         self.OPT_CFG = {
             "Random": {
-                "popsize": None
+                "popsize": 2000,
             },
             "CEM": {
-                "popsize":    None,
-                "num_elites": None,
-                "max_iters":  None,
-                "alpha":      None
+                "popsize":    400,
+                "num_elites": 40,
+                "max_iters":  5,
+                "alpha":      0.1
             }
         }
         self.UPDATE_FNS = []
@@ -68,15 +70,30 @@ class BallInCup3dConfigModule:
     @staticmethod
     def obs_cost_fn(obs):
         # Note: Must be able to process both NumPy and Tensorflow arrays.
-        ## Define a cylinder below the cup with no reward  
-        if abs(obs[0]) < .1 and abs(obs[1]) < .1 and obs[2] > 0:
-            return 0
+        ## Define a cylinder below the cup with no reward
+        import pdb; pdb.set_trace()
+        # if abs(obs[0]) < .1 and abs(obs[1]) < .1 and obs[2] > 0:
+            # return 0
         ## Return distance to target
+        # else:
+        obs_cost_fns = None
+        if isinstance(obs, np.ndarray):
+            obs_cost_fns = np.linalg.norm(obs[:,:3], axis=1)
+            
         else:
-            if isinstance(obs, np.ndarray):
-                return np.linalg.norm(obs[:3])
-            else:
-                return tf.norm(obs[:3])
+            obs_cost_fns = tf.norm(obs[:,:3], axis=1)
+            abs_obs = tf.abs(obs)
+            cond_1 = tf.less_equal(abs_obs[:,0], tf.constant(0.1))
+            obs_cost_fns.assign(tf.where(cond_1,
+                                         tf.zeros_like(obs_cost_fns), obs_cost_fns))
+            cond_2 = tf.less_equal(abs_obs[:,1], tf.constant(0.1))
+            obs_cost_fns.assign(tf.where(cond_2,
+                                         tf.zeros_like(obs_cost_fns), obs_cost_fns))
+            cond_3 = tf.greater(abs_obs[:,2], tf.constant(0))
+            obs_cost_fns.assign(tf.where(cond_3,
+                                         tf.zeros_like(obs_cost_fns), obs_cost_fns))
+
+        return obs_cost_fns
             
     @staticmethod
     def ac_cost_fn(acs):
