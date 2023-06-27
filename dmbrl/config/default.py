@@ -138,7 +138,8 @@ def _create_ctrl_config(ctrl_cfg, cfg_module, ctrl_type, ctrl_args, type_map):
         else:
             raise NotImplementedError("Unknown model type.")
 
-        ctrl_cfg.prop_cfg.mode = ctrl_args.get("prop-type", "TSinf")
+        # ctrl_cfg.prop_cfg.mode = ctrl_args.get("prop-type", "TSinf")
+        ctrl_cfg.prop_cfg.mode = ctrl_args.get("prop-type", "TS1")
         ctrl_cfg.prop_cfg.npart = 20
         # Handle special cases
         if ctrl_cfg.prop_cfg.mode[:2] == "TS":

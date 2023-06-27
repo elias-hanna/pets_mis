@@ -111,7 +111,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
         
     if ctrl_type == "MPC":
         cfg.exp_cfg.exp_cfg.policy = MPC(cfg.ctrl_cfg)
-    
+
     exp = MBExperiment(cfg.exp_cfg)
 
     os.makedirs(exp.logdir)

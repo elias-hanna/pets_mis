@@ -61,14 +61,21 @@ class Agent:
                 recorder.capture_frame()
             t1 = time.time()
             start = time.time()
-            A.append(policy.act(O[t], t))
+            action, pred_cost = policy.act(O[t], t, get_pred_cost=True)
+            A.append(action)
+            # A.append(policy.act(O[t], t))
             times.append(time.time() - start)
             if self.noise_stddev is None:
                 obs, reward, done, info = self.env.step(A[t])
+                print('action (no noise):', A[t])
             else:
                 action = A[t] + np.random.normal(loc=0, scale=self.noise_stddev, size=[self.dU])
                 action = np.minimum(np.maximum(action, self.env.action_space.low), self.env.action_space.high)
                 obs, reward, done, info = self.env.step(action)
+                print('action (with noise):', action)
+            print('observation:', obs)
+            print('pred cost: ', pred_cost)
+            print('reward: ', reward)
             t2 = time.time()
             O.append(obs)
             reward_sum += reward
