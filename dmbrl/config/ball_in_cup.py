@@ -28,14 +28,21 @@ class BallInCup3dConfigModule:
         cfg.gpu_options.per_process_gpu_memory_fraction = 0.1
         cfg.log_device_placement = True
         self.SESS = tf.Session(config=cfg)
-        self.NN_TRAIN_CFG = {"epochs": 5}
+        # self.NN_TRAIN_CFG = {"epochs": 5}
+        self.NN_TRAIN_CFG = {"epochs": 20}
         self.OPT_CFG = {
             "Random": {
                 "popsize": 2000,
             },
+            # "CEM": {
+            #     "popsize":    400,
+            #     "num_elites": 40,
+            #     "max_iters":  5,
+            #     "alpha":      0.1
+            # }
             "CEM": {
-                "popsize":    400,
-                "num_elites": 40,
+                "popsize":    50,
+                "num_elites": 5,
                 "max_iters":  5,
                 "alpha":      0.1
             }
@@ -70,19 +77,11 @@ class BallInCup3dConfigModule:
         
     @staticmethod
     def obs_cost_fn(obs):
-        # Note: Must be able to process both NumPy and Tensorflow arrays.
-        ## Define a cylinder below the cup with no reward
-        # import pdb; pdb.set_trace()
-        # if abs(obs[0]) < .1 and abs(obs[1]) < .1 and obs[2] > 0:
-            # return 0
-        ## Return distance to target
-        # else:
         obs_costs = None
         if isinstance(obs, np.ndarray):
             ## This reward function creates an empty reward zone right below the cup
             # abs_obs = np.abs(obs)
             # obs_costs = np.linalg.norm(obs[:,:3], axis=1)
-            # import pdb; pdb.set_trace()
             # zero_inds = np.where((abs_obs[:,0] < 0.1 )
             #                      & (abs_obs[:,1] < 0.1)
             #                      & (abs_obs[:,2] > 0)
@@ -93,19 +92,19 @@ class BallInCup3dConfigModule:
             ## mainting the rope tense as long as the ball is below the cup
             ## If the ball goes above the cup, reward switches to be maximal
             ## when the distance between the ball and the cup is minimal
-            tense_rew = np.linalg.norm(obs[:,:3], axis=1)/.358
-            lifting_rew = (obs[:,2] - .358)/(0 - .358)
+            tense_rew = -np.linalg.norm(obs[:,:3], axis=1)/.358
+            lifting_rew = -(obs[:,2] - .358)/(0 - .358)
             
             below_rew = tense_rew + lifting_rew
             
-            target_close_rew = 2 + 2*(np.linalg.norm(obs[:,:3]) - .358)/(0 - .358)
+            target_close_rew = -2 -2*(np.linalg.norm(obs[:,:3]) - .358)/(0 - .358)
 
             above_rew = target_close_rew
 
             obs_costs = np.empty(below_rew.shape)
             obs_costs[obs[:,3] >= 0] = below_rew[obs[:,3] >= 0]
             obs_costs[obs[:,3] < 0] = above_rew[obs[:,3] < 0]
-            
+
         else:
             ## This reward function creates an empty reward zone right below the cup
             # obs_costs = tf.norm(obs[:,:3], axis=1)
@@ -124,20 +123,32 @@ class BallInCup3dConfigModule:
             # obs_costs = tf.where(cond_7,
             #                      tf.zeros_like(obs_costs), obs_costs)
 
-            tense_rew = tf.divide(tf.norm(obs[:,:3], axis=1), tf.constant(.358))
-            lifting_rew = tf.divide((tf.subtract(obs[:,2], tf.constant(.358))),
-                                    tf.constant(.358))
+            tense_rew = -tf.divide(tf.norm(obs[:,:3], axis=1), tf.constant(.358))
+            lifting_rew = -tf.divide((tf.subtract(obs[:,2], tf.constant(.358))),
+                                     tf.constant(.358))
+            speed_rew = tf.multiply(obs[:,-1], tf.constant(2.))
 
             below_rew = tf.add(tense_rew, lifting_rew)
+            # below_rew = tf.add(tense_rew, speed_rew)
             
             target_close_rew = tf.subtract(tf.norm(obs[:,:3], axis=1), tf.constant(.358))
             target_close_rew = tf.divide(target_close_rew, tf.constant(-.358))
-            target_close_rew = tf.multiply(tf.constant(2.), target_close_rew)
-            above_rew = tf.add(tf.constant(2.), target_close_rew)
+            target_close_rew = -tf.multiply(tf.constant(2.), target_close_rew)
+            above_rew = tf.add(tf.constant(-2.), target_close_rew)
 
             cond = tf.greater(obs[:,2], tf.constant(0.0)) ## ball is below cup
 
             obs_costs = tf.where(cond, below_rew, above_rew)
+
+            # abs_obs = tf.abs(obs)
+            # cond_in_1 = tf.less_equal(abs_obs[:,0], tf.constant(0.042))
+            # cond_in_2 = tf.less_equal(abs_obs[:,1], tf.constant(0.042))
+            # cond_in_3 = tf.less_equal(abs_obs[:,2], tf.constant(0.042))
+            # cond_in = tf.logical_and(cond_in_1, cond_in_2)
+            # cond_in = tf.logical_and(cond_in, cond_in_3)
+
+            # obs_costs = tf.where(cond_in, tf.constant(1000., shape=(20,)), obs_costs)
+            
         return obs_costs
             
     @staticmethod
