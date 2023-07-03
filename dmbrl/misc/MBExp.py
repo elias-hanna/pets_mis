@@ -98,6 +98,7 @@ class MBExperiment:
                 sample["ac"] = np.array(sample["ac"][:-1])
                 sample["rewards"] = np.array(sample["rewards"][:])
                 samples.append(sample)
+
                 
                 traj_obs.append(samples[-1]["obs"])
                 traj_acs.append(samples[-1]["ac"])

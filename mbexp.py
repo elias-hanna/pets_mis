@@ -33,6 +33,8 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
     kwargs = {}
     if init_method is not None:
         ## Instantiate Initializer with params
+        from model_init_study.controller.nn_controller \
+            import NeuralNetworkController
         from model_init_study.initializers.random_policy_initializer \
             import RandomPolicyInitializer
         from model_init_study.initializers.random_actions_initializer \
@@ -46,8 +48,8 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
 
         noise_beta = 2
         if args.init_method == 'random-policies':
-            # Initializer = RandomPolicyInitializer
-            raise NotImplementedError('Random policies not yet implemented for pets')
+            Initializer = RandomPolicyInitializer
+            # raise NotImplementedError('Random policies not yet implemented for pets')
         elif args.init_method == 'random-actions':
             Initializer = RandomActionsInitializer
         elif args.init_method == 'rarph':
@@ -84,8 +86,8 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method):
             'n_test_episodes': 2,
 
             'inc_rew': True,
-            # 'controller_type': NeuralNetworkController,
-            # 'controller_params': controller_params,
+            'controller_type': NeuralNetworkController,
+            'controller_params': controller_params,
 
             'action_min': cfg.exp_cfg.sim_cfg.env.action_space.low[0],
             'action_max': cfg.exp_cfg.sim_cfg.env.action_space.high[0],
