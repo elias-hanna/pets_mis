@@ -12,106 +12,29 @@ class WrappedPETSDynamicsModel():
         ## Takes a list of actions A and a list of states S we want to query the model from
         ## Returns a list of the return of a forward call for each couple (action, state)
         assert len(A) == len(S)
-        batch_len = len(A)
-        # ens_size = self._dynamics_model.ensemble_size
 
-        proc_s_0 = tf.convert_to_tensor(S, dtype='float32')
+        # AA = tf.convert_to_tensor(np.repeat(A, 20, axis=0), dtype='float32')
+        # SS = tf.convert_to_tensor(np.repeat(S, 20, axis=0), dtype='float32')
+        # next_obs = self.policy._predict_next_obs(SS, AA)
+        # next_obs = next_obs.eval(session=self.policy.model.sess)
+        # next_obs = self.policy.obs_postproc2(next_obs)
+        # next_obs = next_obs.reshape((2,20,4))
 
-        proc_s_0 = self.policy.obs_preproc(proc_s_0)
-        
-        # s_0, a_0 = self._expand_to_ts_format(s_0), self._expand_to_ts_format(a_0)
+        next_obs = np.empty((2, 20, S.shape[-1]))
+        soln = np.zeros(25)
+        for i in range(2):
+            soln[0] = A[i]
+            obsn = S[i]
+            pred_cost, pred_traj = self.policy.model.sess.run(
+                [self.policy.pred_cost, self.policy.pred_traj],
+                feed_dict={
+                    self.policy.ac_seq: soln[None],
+                    self.policy.sy_cur_obs: obsn}
+            )
 
-        inputs = tf.concat([proc_s_0, A], axis=-1)
-        # inputs = tf.cast(inputs, 'float32')
-        mean, var  = self.policy.model.create_prediction_tensors(inputs, factored=True, return_numpy=True)
+            next_obs[i] = pred_traj[1,0]
 
-        predictions = self.policy.obs_postproc(S, mean)
-        
-        mean = np.swapaxes(mean, 0, 1)
-        var = np.swapaxes(var, 0, 1)
-        predictions = np.swapaxes(predictions, 0, 1)
-        
-        # return predictions, [0.]*len(predictions)
-        return predictions, var
-    
-        S_0 = np.empty((batch_len*self.ens_size, S.shape[1]))
-        A_0 = np.empty((batch_len*self.ens_size, A.shape[1]))
-
-        batch_cpt = 0
-        for a, s in zip(A, S):
-            S_0[batch_cpt*self.ens_size:batch_cpt*self.ens_size+self.ens_size,:] = \
-            np.tile(s,(self.ens_size, 1))
-            # np.tile(copy.deepcopy(s),(self._dynamics_model.ensemble_size, 1))
-
-            A_0[batch_cpt*self.ens_size:batch_cpt*self.ens_size+self.ens_size,:] = \
-            np.tile(a,(self.ens_size, 1))
-            # np.tile(copy.deepcopy(a),(self._dynamics_model.ensemble_size, 1))
-            batch_cpt += 1
-        return self.forward(A_0, S_0, mean=mean, disagr=disagr, multiple=True)
-
-        return batch_pred_delta_ns, batch_disagreement
-
-    def forward(self, a, s, mean=True, disagr=True, multiple=False):
-        s_0 = copy.deepcopy(s)
-        a_0 = copy.deepcopy(a)
-
-        if not multiple:
-            s_0 = np.tile(s_0,(self.ens_size, 1))
-            a_0 = np.tile(a_0,(self.ens_size, 1))
-
-        # s_0 = ptu.from_numpy(s_0)
-        # a_0 = ptu.from_numpy(a_0)
-
-        # a_0 = a_0.repeat(self._dynamics_model.ensemble_size,1)
-
-        # if probalistic dynamics model - choose output mean or sample            
-        # if disagr:
-        #     if not multiple:
-        #         pred_delta_ns, disagreement = self._dynamics_model.sample_with_disagreement(
-        #             torch.cat((
-        #                 self.policy._expand_to_ts_format(s_0),
-        #                 self.policy._expand_to_ts_format(a_0)), dim=-1
-        #             ), disagreement_type="mean" if mean else "var")
-        #         pred_delta_ns = ptu.get_numpy(pred_delta_ns)
-        #         return pred_delta_ns, disagreement
-        #     else:
-        #         pred_delta_ns_list, disagreement_list = \
-        #         self._dynamics_model.sample_with_disagreement_multiple(
-        #             torch.cat((
-        #                 self.policy._expand_to_ts_format(s_0),
-        #                 self.policy._expand_to_ts_format(a_0)), dim=-1
-        #             ), disagreement_type="mean" if mean else "var")
-        #         for i in range(len(pred_delta_ns_list)):
-        #             pred_delta_ns_list[i] = ptu.get_numpy(pred_delta_ns_list[i])
-        #         return pred_delta_ns_list, disagreement_list
-        # else:
-        #     pred_delta_ns = self._dynamics_model.output_pred_ts_ensemble(s_0, a_0, mean=mean)
-
-        ## For particle: need 3d inputs: (ens_size, batch_size, input_dim)
-        ## Will return (ens_size, batch_size, output_dim)
-
-        proc_s_0 = tf.convert_to_tensor(s_0, dtype='float32')
-
-        proc_s_0 = self.policy.obs_preproc(proc_s_0)
-        
-        # s_0, a_0 = self._expand_to_ts_format(s_0), self._expand_to_ts_format(a_0)
-
-        inputs = tf.concat([proc_s_0, a_0], axis=-1)
-        # inputs = tf.cast(inputs, 'float32')
-        pred_delta_ns = self.policy.model.create_prediction_tensors(inputs, factored=True)
-
-        self.policy.obs_postproc(s_0, pred_delta_ns)
-        return pred_delta_ns, 0
-
-    def _expand_to_ts_format(self, mat):
-        dim = mat.get_shape()[-1]
-        return tf.reshape(
-            tf.transpose(
-                tf.reshape(mat, [-1, self.policy.model.num_nets, self.policy.npart // self.policy.model.num_nets, dim]),
-                [1, 0, 2, 3]
-            ),
-            [self.policy.model.num_nets, -1, dim]
-        )
+        return next_obs, np.zeros((next_obs.shape))
 
 ################################################################################
 ################################# Functions ####################################
@@ -154,6 +77,8 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
         import DynamicsVisualization
 
         ## Instantiate Initializer with params
+        from model_init_study.controller.nn_controller \
+            import NeuralNetworkController
         from model_init_study.initializers.random_policy_initializer \
             import RandomPolicyInitializer
         from model_init_study.initializers.random_actions_initializer \
@@ -167,8 +92,8 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
         
         noise_beta = 2
         if args.init_method == 'random-policies':
-            # Initializer = RandomPolicyInitializer
-            raise NotImplementedError('Random policies not yet implemented for pets')
+            Initializer = RandomPolicyInitializer
+            # raise NotImplementedError('Random policies not yet implemented for pets')
         elif args.init_method == 'random-actions':
             Initializer = RandomActionsInitializer
         elif args.init_method == 'rarph':
@@ -211,8 +136,8 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
             'separator': None,
             
             'inc_rew': True,
-            # 'controller_type': NeuralNetworkController,
-            # 'controller_params': controller_params,
+            'controller_type': NeuralNetworkController,
+            'controller_params': controller_params,
             'dynamics_model_params': dynamics_model_params,
             'action_min': cfg.exp_cfg.sim_cfg.env.action_space.low[0],
             'action_max': cfg.exp_cfg.sim_cfg.env.action_space.high[0],
@@ -404,13 +329,13 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
         init_episode,
         'examples', dump_separate=True, no_sep=True)
 
-    # n_step_visualizer.set_n(plan_h)
+    n_step_visualizer.set_n(plan_h)
     
-    # examples_plan_h_step_trajs, examples_plan_h_step_disagrs, examples_plan_h_step_pred_errors = n_step_visualizer.dump_plots(
-    #     env,
-    #     args.init_method,
-    #     init_episode,
-    #     'examples', dump_separate=True, no_sep=True)
+    examples_plan_h_step_trajs, examples_plan_h_step_disagrs, examples_plan_h_step_pred_errors = n_step_visualizer.dump_plots(
+        env,
+        args.init_method,
+        init_episode,
+        'examples', dump_separate=True, no_sep=True)
 
     ### Full recursive prediction visualizations ###
     examples_pred_trajs, examples_disagrs, examples_pred_errors = test_traj_visualizer.dump_plots(

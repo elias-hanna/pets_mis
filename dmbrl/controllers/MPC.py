@@ -216,6 +216,7 @@ class MPC(Controller):
         self.ac_buf = soln[:self.per*self.dU].reshape(-1, self.dU)
 
         if get_pred_cost and not (self.log_traj_preds or self.log_particles):
+            import pdb; pdb.set_trace()
             if self.model.is_tf_model:
                 pred_cost = self.model.sess.run(
                     self.pred_cost,
@@ -225,6 +226,7 @@ class MPC(Controller):
                 raise NotImplementedError()
             return self.act(obs, t), pred_cost
         elif self.log_traj_preds or self.log_particles:
+            import pdb; pdb.set_trace()
             pred_cost, pred_traj = self.model.sess.run(
                 [self.pred_cost, self.pred_traj],
                 feed_dict={self.ac_seq: soln[None]}

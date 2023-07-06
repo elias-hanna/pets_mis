@@ -29,23 +29,23 @@ class BallInCup3dConfigModule:
         cfg.log_device_placement = True
         self.SESS = tf.Session(config=cfg)
         # self.NN_TRAIN_CFG = {"epochs": 5}
-        self.NN_TRAIN_CFG = {"epochs": 20}
+        self.NN_TRAIN_CFG = {"epochs": 10}
         self.OPT_CFG = {
             "Random": {
                 "popsize": 2000,
             },
-            # "CEM": {
-            #     "popsize":    400,
-            #     "num_elites": 40,
-            #     "max_iters":  5,
-            #     "alpha":      0.1
-            # }
             "CEM": {
-                "popsize":    50,
-                "num_elites": 5,
+                "popsize":    400,
+                "num_elites": 40,
                 "max_iters":  5,
                 "alpha":      0.1
             }
+            # "CEM": {
+            #     "popsize":    50,
+            #     "num_elites": 5,
+            #     "max_iters":  5,
+            #     "alpha":      0.1
+            # }
         }
         self.UPDATE_FNS = []
 
@@ -174,10 +174,17 @@ class BallInCup3dConfigModule:
         # ...
         # model.finalize(tf.train.AdamOptimizer, {"learning_rate": 0.001})
         if not model_init_cfg.get("load_model", False):
-            model.add(FC(500, input_dim=self.MODEL_IN, activation='swish', weight_decay=0.0001))
-            model.add(FC(500, activation='swish', weight_decay=0.00025))
-            model.add(FC(500, activation='swish', weight_decay=0.00025))
-            model.add(FC(self.MODEL_OUT, weight_decay=0.0005))
+            # ## similar to cartpole (simple dyn with rots)
+            # model.add(FC(500, input_dim=self.MODEL_IN, activation='swish', weight_decay=0.0001))
+            # model.add(FC(500, activation='swish', weight_decay=0.00025))
+            # model.add(FC(500, activation='swish', weight_decay=0.00025))
+            # model.add(FC(self.MODEL_OUT, weight_decay=0.0005))
+            ## similar to halfcheetah (complex dims with discontinuities)
+            model.add(FC(200, input_dim=self.MODEL_IN, activation="swish", weight_decay=0.000025))
+            model.add(FC(200, activation="swish", weight_decay=0.00005))
+            model.add(FC(200, activation="swish", weight_decay=0.000075))
+            model.add(FC(200, activation="swish", weight_decay=0.000075))
+            model.add(FC(self.MODEL_OUT, weight_decay=0.0001))
         model.finalize(tf.train.AdamOptimizer, {"learning_rate": 0.001})
         return model
 

@@ -18,6 +18,8 @@ def main(args):
         min_num_trials = 50
     if env_name == 'halfcheetah':
         min_num_trials = 300
+    if env_name == 'ball_in_cup':
+        min_num_trials = 100
 
     im_returns = np.empty((len(init_methods), n_reps, min_num_trials))
     im_returns[:] = np.nan
