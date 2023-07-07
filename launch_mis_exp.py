@@ -296,10 +296,9 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     ret_acs = ret_acs[:,:-1]; ret_trajs = ret_trajs[:,:-1];
     ret_returns = ret_returns[:,:-1]; ret_rewards[:,:-1];
     
-    dynamics_visualizer = DynamicsVisualization(params)
-    dynamics_visualizer.dump_plots(0)
-
     if args.dynamics_only:
+        dynamics_visualizer = DynamicsVisualization(params)
+        dynamics_visualizer.dump_plots(0)
         exit(0)
 
     dynamics_model = WrappedPETSDynamicsModel(policy)
