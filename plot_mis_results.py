@@ -62,6 +62,8 @@ def main(args):
             if data["returns"].shape[1] >= min_num_trials:
                 # returns.append(data["returns"][0][:min_num_trials])
                 returns[rep_cpt] = data["returns"][0][:min_num_trials]
+                if env_name == 'ball_in_cup':
+                    returns[rep_cpt] -= 300
 
             rep_cpt += 1
             
@@ -92,7 +94,7 @@ def main(args):
     plt.legend()
     plt.savefig(f"{env_name}_performance_vs_trials",
                 dpi=300, bbox_inches='tight')
-    plt.show()
+    #plt.show()
     
     
 if __name__ == '__main__':

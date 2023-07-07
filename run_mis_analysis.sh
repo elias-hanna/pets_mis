@@ -10,13 +10,12 @@ reps=10
 
 ## Environments
 environments=(ball_in_cup pusher reacher cartpole halfcheetah)
-environments=(pusher reacher)
-environments=(cartpole)
- 
+environments=(ball_in_cup pusher reacher cartpole)
+
 ## considered policy search methods
 ims=(random-actions brownian-motion colored-noise-beta-0 colored-noise-beta-1 colored-noise-beta-2 random-policies)
-ims=(random-actions brownian-motion colored-noise-beta-0 colored-noise-beta-1 colored-noise-beta-2)
-ims=(random-actions colored-noise-beta-0 colored-noise-beta-1 colored-noise-beta-2) # random-policies)
+
+ims=(random-actions colored-noise-beta-0 colored-noise-beta-1 colored-noise-beta-2 random-policies)
 
 
 pets_folder=~/src/pets
