@@ -21,9 +21,9 @@ class WrappedPETSDynamicsModel():
         # next_obs = next_obs.reshape((2,20,4))
 
         next_obs = np.empty((2, 20, S.shape[-1]))
-        soln = np.zeros(25)
+        soln = np.zeros((25*A.shape[-1]))
         for i in range(2):
-            soln[0] = A[i]
+            soln[:A.shape[-1]] = A[i]
             obsn = S[i]
             pred_cost, pred_traj = self.policy.model.sess.run(
                 [self.policy.pred_cost, self.policy.pred_traj],
