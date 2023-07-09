@@ -43,8 +43,10 @@ class CartpoleEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         ## qpos: [cart x_pos, pole angle, cart x_vel, pole angular vel]
         # state_min = np.array([-2.5, -np.pi, -1, -1])
         # state_max = np.array([2.5, np.pi, 1, 1])
-        state_min = np.array([-2.5, -np.pi, -0.1, -0.1])
-        state_max = np.array([2.5, np.pi, 0.1, 0.1])
+        # state_min = np.array([-2.5, -np.pi, -0.1, -0.1])
+        # state_max = np.array([2.5, np.pi, 0.1, 0.1])
+        state_min = np.array([-2.5, -np.pi, 0., 0.])
+        state_max = np.array([2.5, np.pi, 0., 0.])
 
         qpos = np.zeros(2)
         qvel = np.zeros(2)

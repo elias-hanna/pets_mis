@@ -11,6 +11,7 @@ reps=10
 ## Environments
 environments=(ball_in_cup pusher reacher cartpole halfcheetah)
 environments=(ball_in_cup pusher reacher cartpole)
+environments=(ball_in_cup)
 
 ## considered policy search methods
 ims=(random-actions brownian-motion colored-noise-beta-0 colored-noise-beta-1 colored-noise-beta-2 random-policies)

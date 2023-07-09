@@ -173,6 +173,11 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     else:
         raise ValueError("No Initialization method was passed to the script as CLI argument.")
 
+    if args.dynamics_only:
+        dynamics_visualizer = DynamicsVisualization(params)
+        dynamics_visualizer.dump_plots(0)
+        exit(0)
+        
     plan_h = 0
     if ctrl_type == "MPC":
         # cfg.exp_cfg.exp_cfg.policy = MPC(cfg.ctrl_cfg)
@@ -296,11 +301,6 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     ret_acs = ret_acs[:,:-1]; ret_trajs = ret_trajs[:,:-1];
     ret_returns = ret_returns[:,:-1]; ret_rewards[:,:-1];
     
-    if args.dynamics_only:
-        dynamics_visualizer = DynamicsVisualization(params)
-        dynamics_visualizer.dump_plots(0)
-        exit(0)
-
     dynamics_model = WrappedPETSDynamicsModel(policy)
         
     ## Execute each visualize routines
@@ -409,7 +409,7 @@ if __name__ == "__main__":
                         help='Override default parameters, see https://github.com/kchua/handful-of-trials#overrides')
     parser.add_argument('-logdir', type=str, default='log',
                         help='Directory to which results will be logged (default: ./log)')
-    parser.add_argument('--init-method', type=str, default=None,
+    parser.add_argument('--init-method', type=str, default='random-policies',
                         help='which initial data gathering method to use')
     parser.add_argument('--init-episode', type=int, default=10,
                         help='Budget for initial data gathering method')

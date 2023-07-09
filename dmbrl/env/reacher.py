@@ -47,14 +47,24 @@ class Reacher3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def sample_q_vectors(self):
         ## Need to double check the 5 last qs (and all others once again) 
-        qpos_min = np.array([-np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
-                             -np.pi/2, -np.pi/2, 0, 0, 0])
-        qpos_max = np.array([np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
-                             np.pi/2, np.pi/2, 0, 0, 0])
+        # qpos_min = np.array([-np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2, -np.pi/2,
+        #                      -np.pi/2, -np.pi/2, 0, 0, 0])
+        # qpos_max = np.array([np.pi/2, np.pi/2, np.pi/2, np.pi/2, np.pi/2,
+        #                      np.pi/2, np.pi/2, 0, 0, 0])
+        # qvel_min = np.array([-0.1, -0.1, -0.1, -0.1, -0.1,
+        #                      -0.1, -0.1, 0, 0, 0])
+        # qvel_max = np.array([0.1, 0.1, 0.1, 0.1, 0.1,
+        #                      0.1, 0.1, 0, 0, 0])
+
+        qpos_min = np.array([-np.pi, -np.pi, -np.pi, -np.pi, -np.pi,
+                             -np.pi, -np.pi, -1, -1, -1])
+        qpos_max = np.array([np.pi, np.pi, np.pi, np.pi, np.pi,
+                             np.pi, np.pi, 1, 1, 1])
         qvel_min = np.array([-0.1, -0.1, -0.1, -0.1, -0.1,
-                             -0.1, -0.1, 0, 0, 0])
+                             -0.1, -0.1, -0.1, -0.1, -0.1])
         qvel_max = np.array([0.1, 0.1, 0.1, 0.1, 0.1,
-                             0.1, 0.1, 0, 0, 0])
+                             0.1, 0.1, 0.1, 0.1, 0.1])
+        
         
         qpos = np.zeros(10)
         qvel = np.zeros(10)
