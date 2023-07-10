@@ -80,7 +80,6 @@ class Reacher3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def get_EE_pos(self, states):
         theta1, theta2, theta3, theta4, theta5, theta6, theta7 = \
             states[:, :1], states[:, 1:2], states[:, 2:3], states[:, 3:4], states[:, 4:5], states[:, 5:6], states[:, 6:]
-
         rot_axis = np.concatenate([np.cos(theta2) * np.cos(theta1), np.cos(theta2) * np.sin(theta1), -np.sin(theta2)],
                                   axis=1)
         rot_perp_axis = np.concatenate([-np.sin(theta1), np.cos(theta1), np.zeros(theta1.shape)], axis=1)

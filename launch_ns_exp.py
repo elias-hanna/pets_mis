@@ -188,8 +188,9 @@ def main(args):
         ## for hexapod
         obs_dim = state_dim 
         act_dim = env_params['act_dim']
-        max_step = 300
-        dim_x = env_params['dim_x']
+        max_step = env_params['max_step']
+        if args.environment == 'hexapod_omni':
+            dim_x = env_params['dim_x']
         
     n_waypoints = args.n_waypoints
     dim_map *= n_waypoints
@@ -306,7 +307,7 @@ def main(args):
         # obs_dim = cfg.ctrl_cfg.env.obs_dim
         # act_dim = cfg.ctrl_cfg.env.action_space.shape[0]
         gym_env = cfg.ctrl_cfg.env
-        params['gym_env'] = gym_env
+        params['env'] = gym_env
         is_local_env = False
         
     if not is_local_env:
@@ -369,17 +370,15 @@ if __name__ == "__main__":
     import warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning) 
     warnings.filterwarnings("ignore", category=RuntimeWarning) 
+    from dotmap import DotMap
+    from dmbrl.config import create_config
+
+    from scipy.io import loadmat
  
     parser = argparse.ArgumentParser()
     args = process_args(parser)
     
     main(args)
 
-    from dotmap import DotMap
-    from dmbrl.config import create_config
 
-    from scipy.io import loadmat
-
-
-    main(args.env, "MPC", args.ctrl_arg, args.override, args.logdir, args.init_method, args.init_episode, args.num_cores, args.action_sample_budget, args.state_sample_budget)
 
