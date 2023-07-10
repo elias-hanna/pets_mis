@@ -60,11 +60,14 @@ def main(args):
             time_dir = time_dirs[0]
             data = loadmat(os.path.join(time_dir, "logs.mat"))
             if data["returns"].shape[1] >= min_num_trials:
-                # returns.append(data["returns"][0][:min_num_trials])
+                ## Just to remove outliers from CNRW_0...
+                if env_name == 'reacher' and '0' in init_method:
+                    if data["returns"][0][:min_num_trials][0] < -250:
+                        continue
                 returns[rep_cpt] = data["returns"][0][:min_num_trials]
                 if env_name == 'ball_in_cup':
                     returns[rep_cpt] -= 300
-
+                
             rep_cpt += 1
             
         returns = np.array(returns)
@@ -91,7 +94,7 @@ def main(args):
     plt.xlabel("Iteration number")
     plt.ylabel("Return")
     fig.set_size_inches(35, 14)
-    plt.legend()
+    plt.legend(prop={'size': 20})
     plt.savefig(f"{env_name}_performance_vs_trials",
                 dpi=300, bbox_inches='tight')
     #plt.show()
