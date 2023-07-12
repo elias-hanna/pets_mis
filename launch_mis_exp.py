@@ -281,6 +281,11 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
         traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-20--15:30:24/logs.mat'))
         traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-20--15:30:25/logs.mat'))
 
+
+    ## Use new trajectories coming from NS runs
+    # if env == 'cartpole':
+        # trajs_data = []
+    
         
     def get_test_data(*args):
         ret_acs = []

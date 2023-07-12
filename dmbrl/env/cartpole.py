@@ -31,8 +31,8 @@ class CartpoleEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return ob, reward, done, {}
 
     def reset_model(self):
-        qpos = self.init_qpos + np.random.normal(0, 0.1, np.shape(self.init_qpos))
-        qvel = self.init_qvel + np.random.normal(0, 0.1, np.shape(self.init_qvel))
+        qpos = self.init_qpos # + np.random.normal(0, 0.1, np.shape(self.init_qpos))
+        qvel = self.init_qvel # + np.random.normal(0, 0.1, np.shape(self.init_qvel))
         self.set_state(qpos, qvel)
         return self._get_obs()
 

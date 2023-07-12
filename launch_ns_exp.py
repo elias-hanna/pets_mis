@@ -86,7 +86,7 @@ def main(args):
         #--------UNSTURCTURED ARCHIVE PARAMS----#
         # l value - should be smaller if you want more individuals in the archive
         # - solutions will be closer to each other if this value is smaller.
-        "nov_l": 0.015,
+        "nov_l": args.novl,
         # "nov_l": 1.5,
         "eps": 0.1, # usually 10%
         "k": 15,  # from novelty search

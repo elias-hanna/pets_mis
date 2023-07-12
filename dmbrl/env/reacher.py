@@ -33,7 +33,7 @@ class Reacher3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         qpos, qvel = np.copy(self.init_qpos), np.copy(self.init_qvel)
-        qpos[-3:] += np.random.normal(loc=0, scale=0.1, size=[3])
+        # qpos[-3:] += np.random.normal(loc=0, scale=0.1, size=[3])
         qvel[-3:] = 0
         self.goal = qpos[-3:]
         self.set_state(qpos, qvel)

@@ -26,7 +26,6 @@ def main(args):
     # Get current working dir (folder from which py script was executed)
     root_wd = os.getcwd()
     
-    
     ## Go over init methods
     for (init_method, im_cpt) in zip(init_methods, range(len(init_methods))):
         print(f"Processing {init_method} results on {env_name}...")
@@ -73,6 +72,24 @@ def main(args):
         returns = np.array(returns)
         returns = np.maximum.accumulate(returns, axis=-1)
         im_returns[im_cpt,:,:] = returns
+
+    ## Boxplot of return on first iteration only 
+    fig, ax = plt.subplots()
+    ## Add to the coverage boxplot the policy search method
+    init_returns = im_returns[:,:,0]
+    mask = ~np.isnan(init_returns)
+    filtered_init_returns = [d[m] for d, m in zip(init_returns, mask)]
+    ax.boxplot(filtered_init_returns, 0, '') # don't show the outliers
+    # ax.boxplot(im_returns[:,:,0].T, 0, '') # don't show the outliers
+    # ax.boxplot(all_psm_covs)
+    ax.set_xticklabels(init_methods, fontsize=20)
+
+    ax.set_ylabel("Return")
+
+    plt.title(f"PETS initial return for different model bootstraps on {args.environment} environment")
+    fig.set_size_inches(28, 14)
+    plt.savefig(f"{args.environment}_bp_return")
+
 
     fig, ax = plt.subplots()
 
