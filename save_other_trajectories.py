@@ -76,71 +76,10 @@ def process_env(args):
     
     return obs_dim, act_dim, dim_map, max_step, obs_min, obs_max
 
-def pd_read_csv_fast(filename):
-    ## Only read the first line to get the columns
-    data = pd.read_csv(filename, nrows=1)
-    ## Only keep important columns and 5 genotype columns for merge purposes
-    usecols = [col for col in data.columns if 'bd' in col or 'fit' in col]
-    usecols += [col for col in data.columns if 'x' in col][:5]
-    ## Return the complete dataset (without the << useless >> columns
-    return pd.read_csv(filename, usecols=usecols)
-
-def get_closest_to_clusters_centroid(data, bd_cols, n_clusters):
-    # Use k-means clustering to divide the data space into n_clusters clusters
-    kmeans = KMeans(n_clusters=n_clusters)
-    kmeans.fit(data[bd_cols])
-    
-    # Select closest data point from each cluster
-    data_centers = pd.DataFrame(columns=data.columns)
-
-    for i in range(n_clusters):
-        cluster_center = kmeans.cluster_centers_[i]
-        cluster = data[kmeans.labels_ == i]
-        # cluster = data[data['cluster'] == i]
-        # Calculate the distance of each point in the cluster to the cluster center
-        dist = 0
-        for j in range(len(bd_cols)):
-            dist += (cluster[bd_cols[j]] - cluster_center[j])**2
-        cluster['distance'] = dist**0.5
-        # Select the point with the minimum distance to the cluster center
-        closest_point = cluster.loc[cluster['distance'].idxmin()]
-        data_centers = data_centers.append(closest_point)
-
-    return data_centers
-
-def normalize_inputs_o_minmax(data, obs_min, obs_max):
-        data_norm = (data - obs_min)/(obs_max - obs_min)
-        rescaled_data_norm = data_norm * (1 + 1) - 1 ## Rescale between -1 and 1
-        return rescaled_data_norm
-
 def main(args):
-    n_waypoints = 2
     # get env info
     obs_dim, act_dim, dim_map, max_step, obs_min, obs_max = process_env(args)
-    bd_cols = ['bd'+str(i) for i in range(dim_map*n_waypoints)]
-    ## Load data
-    rel_fp = args.environment + '_ns_results'
-    rel_fp = os.path.join(rel_fp, 'ffnn_2l_10n_2wps_results')
 
-    xs_per_reps = []
-    bds_per_reps = []
-    for i in range(1, args.n_reps+1):
-        rel_fp = os.path.join(rel_fp, str(i))
-        filename = os.path.join(rel_fp, 'archive_100100.dat')
-        # filename = os.path.join(rel_fp, 'archive_100100_all_evals.dat')
-
-        ## Load it as a pandas dataframe
-        # archive_data = pd_read_csv_fast(filename)
-        archive_data = pd.read_csv(filename)
-        archive_data = archive_data.iloc[:,:-1]
-
-        ## select sel_size individuals closest to sel_size kmeans clusters
-        ret_data = get_closest_to_clusters_centroid(archive_data, bd_cols, 10)
-        gen_cols = [col for col in ret_data.columns if 'x' in col]
-
-        xs_per_reps.append(ret_data[gen_cols].to_numpy())
-        bds_per_reps.append(ret_data[bd_cols].to_numpy())
-        
     ## Replay the selected trajectories..
 
     # First create the env instance
@@ -168,53 +107,72 @@ def main(args):
     }
 
     obs_trajs = []
-    
-    controller = NeuralNetworkController(params)
-    for i in range(args.n_reps):
-        for (x, bd) in zip(xs_per_reps[i], bds_per_reps[i]):
-            controller.set_parameters(x)
+    ac_trajs = []
+
+    from model_init_study.initializers.colored_noise_motion \
+            import ColoredNoiseMotion
+
+    init = 'colored'
+
+    if init == 'colored':
+        noise_beta = 2
+        params = \
+        {
+            'obs_dim': obs_dim,
+            'action_dim': act_dim,
+
+            'n_init_episodes': 10,
+            'n_test_episodes': 0,
+            
+            'action_min': gym_env.action_space.low[0],
+            'action_max': gym_env.action_space.high[0],
+            'action_init': 0,
+
+            ## Random walks parameters
+            'step_size': 0.1,
+            'noise_beta': noise_beta,
+
+            'env': gym_env,
+            'env_name': args.environment,
+            'env_max_h': max_step,
+        }
+        initializer = ColoredNoiseMotion(params)
+        ## Execute the initializer policies on the environment
+        all_trajs = initializer.run()
+        ## reshape the obtained trajectories
+        examples = np.empty((10, max_step+1, obs_dim))
+        examples[:] = np.nan
+        traj_cpt = 0
+        for traj in all_trajs:
+            for i in range(max_step+1):
+                examples[traj_cpt,i, :] = traj[i][1]
+            traj_cpt += 1
+        ac_trajs = np.array(initializer.actions)
+    else:
+        for i in range(args.n_reps):
             obs = gym_env.reset()
             obs_trajs.append([])
+            ac_trajs.append([])
             # for j in range(2):
             for t in range(max_step):
-                norm_obs = normalize_inputs_o_minmax(obs, obs_min, obs_max)
-                a = controller(norm_obs)
-                a = np.clip(a, -1, 1)
+                a = gym_env.action_space.sample()
+                # a = np.clip(a, -1, 1)
                 obs_trajs[-1].append(obs)
+                ac_trajs[-1].append(a)
                 obs, r, d, info = gym_env.step(a)
 
             obs_trajs[-1].append(obs)
-            wp_idxs = [i for i in range(len(obs_trajs[-1])//n_waypoints, len(obs_trajs[-1]),
-                                        len(obs_trajs[-1])//n_waypoints)][:n_waypoints-1]
-            wp_idxs += [-1]
 
-            obs_wps = np.take(obs_trajs[-1], wp_idxs, axis=0)
-
-            if args.environment == 'ball_in_cup':
-                replay_bd = obs_wps[:,:3].flatten()
-            elif args.environment == 'cartpole':
-                ## BD is pos of cart + orientation of pole
-                replay_bd = obs_wps[:,[0,2]].flatten()
-            elif args.environment == 'pusher':
-                ## BD is EE pos + object pos
-                replay_bd = obs_wps[:,-6:].flatten()
-            elif args.environment == 'reacher':
-                ## BD is EE pos
-                ees = gym_env.get_EE_pos(obs_wps)
-                replay_bd = ees.flatten()
-            print('bd:        ',bd)
-            print('replay bd: ',replay_bd)
+        examples = np.array(obs_trajs)
+        ac_trajs = np.array(ac_trajs)
 
     fname = '{}_example_trajectories.npz'.format(args.environment)
-    examples = np.array(obs_trajs)
-    xs_per_reps = np.array(xs_per_reps)
-    c_params = np.reshape(xs_per_reps,
-                        (xs_per_reps.shape[0]*xs_per_reps.shape[1],
-                         xs_per_reps.shape[2]))
 
+    print(examples.shape)
+    print(ac_trajs.shape)
     np.savez(fname,
              examples=examples,
-             params=c_params)
+             ac_trajs=ac_trajs)
 
 if __name__ == '__main__':
     #----------Utils imports--------#
@@ -239,13 +197,9 @@ if __name__ == '__main__':
     parser.add_argument('--environment', '-e', type=str, required=True,
                         help='Environment name')
 
-    parser.add_argument('--ns-examples-path', type=str, default=None,
-                        required=True,
-                        help='Path of NS results from which we want to gather' \
-                        ' trajectories')
-
-    parser.add_argument('--n-reps', type=int, default=1,
+    parser.add_argument('--n-reps', type=int, default=10,
                         help='Number of repetitions of ns exps')
+    
     args = parser.parse_args()
 
     main(args)

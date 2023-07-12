@@ -19,10 +19,10 @@ class WrappedPETSDynamicsModel():
         # next_obs = next_obs.eval(session=self.policy.model.sess)
         # next_obs = self.policy.obs_postproc2(next_obs)
         # next_obs = next_obs.reshape((2,20,4))
-
-        next_obs = np.empty((2, 20, S.shape[-1]))
+        n_trajs = len(A)
+        next_obs = np.empty((n_trajs, 20, S.shape[-1]))
         soln = np.zeros((25*A.shape[-1]))
-        for i in range(2):
+        for i in range(n_trajs):
             soln[:A.shape[-1]] = A[i]
             obsn = S[i]
             pred_cost, pred_traj = self.policy.model.sess.run(
@@ -66,6 +66,13 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     cfg = create_config(env, ctrl_type, ctrl_args, overrides, logdir)
     cfg.pprint()
 
+    ## Get the expert trajectories
+    path_to_examples = os.path.join(args.ns_examples_path, env+'_example_trajectories.npz')
+
+    example_trajs_data = np.load(path_to_examples)
+    example_trajs = example_trajs_data['examples']
+    ac_trajs = example_trajs_data['ac_trajs']
+    
     kwargs = {}
     if init_method is not None:
         ## Visualizing method
@@ -164,6 +171,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
 
             ## dump
             'dump_path': logdir,
+            # 'path_to_test_trajectories': path_to_examples,
         }
 
         ## Instanciate the initializer
@@ -256,55 +264,53 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
         [sample["rewards"] for sample in train_samples]
     )
 
-    ## Get the expert trajectories
+    # ## We get them from random actions folder results on each env:
+    # home_path = os.path.expanduser('~')
+    # path_to_results = ''
+    # if args.pets_results_path is not None:
+    #     path_to_results = args.pets_results_path
+    # else:
+    #     path_to_results = os.path.join(home_path, 'mis_results/')
 
-    ## We get them from random actions folder results on each env:
-    home_path = os.path.expanduser('~')
-    path_to_results = ''
-    if args.pets_results_path is not None:
-        path_to_results = args.pets_results_path
-    else:
-        path_to_results = os.path.join(home_path, 'mis_results/')
+    # path_to_test_trajectories = '{}_pets_results/{}_random-actions_pets_results'.format(env, env)
 
-    path_to_test_trajectories = '{}_pets_results/{}_random-actions_pets_results'.format(env, env)
+    # abs_path_to_trajs = os.path.join(path_to_results, path_to_test_trajectories)
 
-    abs_path_to_trajs = os.path.join(path_to_results, path_to_test_trajectories)
-
-    if env == 'cartpole': 
-        ## Will have to do it with os.walk for other envs
-        traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-23--15:12:46/logs.mat'))
-        traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-23--15:12:46/logs.mat'))
-    elif env == 'pusher':
-        traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-22--08:37:34/logs.mat'))
-        traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-22--08:37:34/logs.mat'))
-    elif env == 'reacher':
-        traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-20--15:30:24/logs.mat'))
-        traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-20--15:30:25/logs.mat'))
+    # if env == 'cartpole': 
+    #     ## Will have to do it with os.walk for other envs
+    #     traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-23--15:12:46/logs.mat'))
+    #     traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-23--15:12:46/logs.mat'))
+    # elif env == 'pusher':
+    #     traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-22--08:37:34/logs.mat'))
+    #     traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-22--08:37:34/logs.mat'))
+    # elif env == 'reacher':
+    #     traj1_data = loadmat(os.path.join(abs_path_to_trajs, '1/2023-04-20--15:30:24/logs.mat'))
+    #     traj2_data = loadmat(os.path.join(abs_path_to_trajs, '5/2023-04-20--15:30:25/logs.mat'))
 
 
-    ## Use new trajectories coming from NS runs
-    # if env == 'cartpole':
-        # trajs_data = []
+    # ## Use new trajectories coming from NS runs
+    # # if env == 'cartpole':
+    #     # trajs_data = []
     
         
-    def get_test_data(*args):
-        ret_acs = []
-        ret_trajs = []
-        ret_returns = []
-        ret_rewards = []
-        for traj_data in args:
-            ## -1 to get the final traj (~ best)
-            ret_acs.append(traj_data["actions"][-1])
-            ret_trajs.append(traj_data["observations"][-1])
-            ret_returns.append(traj_data["returns"][-1])
-            ret_rewards.append(traj_data["rewards"][-1])
-        return np.array(ret_acs), np.array(ret_trajs), np.array(ret_returns), np.array(ret_rewards)
+    # def get_test_data(*args):
+    #     ret_acs = []
+    #     ret_trajs = []
+    #     ret_returns = []
+    #     ret_rewards = []
+    #     for traj_data in args:
+    #         ## -1 to get the final traj (~ best)
+    #         ret_acs.append(traj_data["actions"][-1])
+    #         ret_trajs.append(traj_data["observations"][-1])
+    #         ret_returns.append(traj_data["returns"][-1])
+    #         ret_rewards.append(traj_data["rewards"][-1])
+    #     return np.array(ret_acs), np.array(ret_trajs), np.array(ret_returns), np.array(ret_rewards)
 
-    ret_acs, ret_trajs, ret_returns, ret_rewards = get_test_data(traj1_data, traj2_data)
+    # ret_acs, ret_trajs, ret_returns, ret_rewards = get_test_data(traj1_data, traj2_data)
 
-    ## Fix sequences lengths
-    ret_acs = ret_acs[:,:-1]; ret_trajs = ret_trajs[:,:-1];
-    ret_returns = ret_returns[:,:-1]; ret_rewards[:,:-1];
+    # ## Fix sequences lengths
+    # ret_acs = ret_acs[:,:-1]; ret_trajs = ret_trajs[:,:-1];
+    # ret_returns = ret_returns[:,:-1]; ret_rewards[:,:-1];
     
     dynamics_model = WrappedPETSDynamicsModel(policy)
         
@@ -312,14 +318,20 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     params['model'] = dynamics_model # to pass down to the visualizer routines
 
     test_traj_visualizer = TestTrajectoriesVisualization(params)
-    test_traj_visualizer.set_test_trajectories(ret_trajs)
-    test_traj_visualizer.set_controller(None, actions_lists=ret_acs,
+    # test_traj_visualizer.set_test_trajectories(ret_trajs)
+    # test_traj_visualizer.set_controller(None, actions_lists=ret_acs,
+                                     # ctrl_type='actions_list', ctrl_input='time')
+    test_traj_visualizer.set_test_trajectories(example_trajs)
+    test_traj_visualizer.set_controller(None, actions_lists=ac_trajs,
                                      ctrl_type='actions_list', ctrl_input='time')
 
 
     n_step_visualizer = NStepErrorVisualization(params)
-    n_step_visualizer.set_test_trajectories(ret_trajs)
-    n_step_visualizer.set_controller(None, actions_lists=ret_acs,
+    # n_step_visualizer.set_test_trajectories(ret_trajs)
+    # n_step_visualizer.set_controller(None, actions_lists=ret_acs,
+                                     # ctrl_type='actions_list', ctrl_input='time')
+    n_step_visualizer.set_test_trajectories(example_trajs)
+    n_step_visualizer.set_controller(None, actions_lists=ac_trajs,
                                      ctrl_type='actions_list', ctrl_input='time')
 
     ## FROM EXAMPLE TRAJECTORIES (end trajs that solve the task)
@@ -420,6 +432,8 @@ if __name__ == "__main__":
                         help='Budget for initial data gathering method')
     parser.add_argument('--pets-results-path', type=str, default=None,
                         help='Path of previous PETS results for running the MIS')
+    parser.add_argument('--ns-examples-path', type=str, default=None,
+                        help='Path of examples trajectories foraged with NS')
     parser.add_argument('--num-cores', type=int, default=10,
                         help='number of cores to use for parallel computation')
     parser.add_argument('--action-sample-budget', type=int, default=1000,
