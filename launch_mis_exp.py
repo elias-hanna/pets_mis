@@ -171,7 +171,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
 
             ## dump
             'dump_path': logdir,
-            # 'path_to_test_trajectories': path_to_examples,
+            'path_to_test_trajectories': path_to_examples,
         }
 
         ## Instanciate the initializer
@@ -321,18 +321,18 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     # test_traj_visualizer.set_test_trajectories(ret_trajs)
     # test_traj_visualizer.set_controller(None, actions_lists=ret_acs,
                                      # ctrl_type='actions_list', ctrl_input='time')
-    test_traj_visualizer.set_test_trajectories(example_trajs)
-    test_traj_visualizer.set_controller(None, actions_lists=ac_trajs,
-                                     ctrl_type='actions_list', ctrl_input='time')
+    # test_traj_visualizer.set_test_trajectories(example_trajs)
+    # test_traj_visualizer.set_controller(None, actions_lists=ac_trajs,
+                                     # ctrl_type='actions_list', ctrl_input='time')
 
 
     n_step_visualizer = NStepErrorVisualization(params)
     # n_step_visualizer.set_test_trajectories(ret_trajs)
     # n_step_visualizer.set_controller(None, actions_lists=ret_acs,
                                      # ctrl_type='actions_list', ctrl_input='time')
-    n_step_visualizer.set_test_trajectories(example_trajs)
-    n_step_visualizer.set_controller(None, actions_lists=ac_trajs,
-                                     ctrl_type='actions_list', ctrl_input='time')
+    # n_step_visualizer.set_test_trajectories(example_trajs)
+    # n_step_visualizer.set_controller(None, actions_lists=ac_trajs,
+                                     # ctrl_type='actions_list', ctrl_input='time')
 
     ## FROM EXAMPLE TRAJECTORIES (end trajs that solve the task)
     ## Visualize n step error and disagreement ###

@@ -112,7 +112,7 @@ def main(args):
     from model_init_study.initializers.colored_noise_motion \
             import ColoredNoiseMotion
 
-    init = 'random'
+    init = 'colored'
 
     if init == 'colored':
         noise_beta = 0

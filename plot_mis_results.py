@@ -82,13 +82,13 @@ def main(args):
     ax.boxplot(filtered_init_returns, 0, '') # don't show the outliers
     # ax.boxplot(im_returns[:,:,0].T, 0, '') # don't show the outliers
     # ax.boxplot(all_psm_covs)
-    ax.set_xticklabels(init_methods, fontsize=20)
+    ax.set_xticklabels(init_methods, fontsize=12)
 
-    ax.set_ylabel("Return")
+    ax.set_ylabel("Return", fontsize=12)
 
-    plt.title(f"PETS initial return for different model bootstraps on {args.environment} environment")
-    fig.set_size_inches(28, 14)
-    plt.savefig(f"{args.environment}_bp_return")
+    # plt.title(f"PETS initial return for different model bootstraps on {args.environment} environment")
+    fig.set_size_inches(14, 7)
+    plt.savefig(f"{args.environment}_bp_return", bbox_inches='tight')
 
 
     fig, ax = plt.subplots()
