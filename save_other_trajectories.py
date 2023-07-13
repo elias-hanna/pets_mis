@@ -112,10 +112,10 @@ def main(args):
     from model_init_study.initializers.colored_noise_motion \
             import ColoredNoiseMotion
 
-    init = 'colored'
+    init = 'random'
 
     if init == 'colored':
-        noise_beta = 2
+        noise_beta = 0
         params = \
         {
             'obs_dim': obs_dim,
@@ -155,7 +155,9 @@ def main(args):
             ac_trajs.append([])
             # for j in range(2):
             for t in range(max_step):
-                a = gym_env.action_space.sample()
+                if t%5 == 0:
+                    a = gym_env.action_space.sample()
+                    print(a, t)
                 # a = np.clip(a, -1, 1)
                 obs_trajs[-1].append(obs)
                 ac_trajs[-1].append(a)
