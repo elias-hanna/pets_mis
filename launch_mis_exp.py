@@ -82,7 +82,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
         import NStepErrorVisualization
         from model_init_study.visualization.dynamics_visualization \
         import DynamicsVisualization
-
+        
         ## Instantiate Initializer with params
         from model_init_study.controller.nn_controller \
             import NeuralNetworkController
@@ -334,6 +334,7 @@ def main(env, ctrl_type, ctrl_args, overrides, logdir, init_method,
     # n_step_visualizer.set_controller(None, actions_lists=ac_trajs,
                                      # ctrl_type='actions_list', ctrl_input='time')
 
+    
     ## FROM EXAMPLE TRAJECTORIES (end trajs that solve the task)
     ## Visualize n step error and disagreement ###
 
