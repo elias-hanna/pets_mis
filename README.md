@@ -1,3 +1,16 @@
+# Model Initialization Study on PETS
+
+This repository contains the code to run a study on the impact of the initial data gathering technique used to bootstrap the model used by the PETS algorithm. This repository is built upon the [original PETS algorithm repository](https://github.com/kchua/handful-of-trials).
+
+Four environments are available: three from the original PETS experiments (cartpole, pusher and reacher) and a 3D Ball In Cup environment in Mujoco (implemented in the [Model-Based Go-Explore repository](https://github.com/elias-hanna/mb_ge)). 
+
+```ball_in_cup``` option to the -env argument to use the Ball In Cup environment.
+```--init-method``` argument, with options being ```random-policies, random-actions, colored-noise-beta-0, colored-noise-beta-1, colored-noise-beta-2``` corresponding to each of the initial data gathering techniques considered.
+Each run will use 10 randomly sampled trajectories using one the selected initialization method.
+The ```run_mis_analysis.sh``` file is used to plot the reward evolution over iterations of the algorithm using various initial data gathering techniques over multiple repetitions. 
+
+Below is the original README.md file from PETS:
+
 # Deep Reinforcement Learning in a Handful of Trials using Probabilistic Dynamics Models
 
 <p align=center>
@@ -149,4 +162,3 @@ Example plotting code is given in `plotter.ipynb`, and can be run using Jupyter 
 ## Contact
 
 To ask questions or report any issues, please open an issue on the [Issues](https://github.com/kchua/handful-of-trials/issues) page.
-# MIS PETS
